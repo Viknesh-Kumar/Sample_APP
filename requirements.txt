@@ -1,1 +1,3 @@
-yfinance
+py3dbp
+pandas
+plotly
