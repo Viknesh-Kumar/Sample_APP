@@ -1,23 +1,26 @@
+pip install yfinance
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+import yfinance as yf  # You'll need to install: pip install yfinance
+import datetime
 
-st.title("Interactive Data Exploration App")
+st.title("Stock Price Visualizer")
 
-# Data Loading (you can replace this with your method of data loading)
-df = pd.DataFrame(np.random.randn(20, 3), columns=["a", "b", "c"])
+# User input for stock ticker
+ticker_symbol = st.text_input("Enter stock ticker (e.g., AAPL, GOOG, TSLA)", "AAPL")
 
-# Sidebar for User Input
-st.sidebar.header("User Input")
-selected_column = st.sidebar.selectbox("Select a column", df.columns)
-bin_size = st.sidebar.slider("Histogram Bin Size", 1, 10, 5)
+# Time period selection
+start_date = st.date_input("Start date", datetime.date.today() - datetime.timedelta(days=365))
+end_date = st.date_input("End date", datetime.date.today())
 
-# Main App Area
-st.subheader(f"Distribution of '{selected_column}'")
-fig, ax = plt.subplots()
-ax.hist(df[selected_column], bins=bin_size)
-st.pyplot(fig)
+# Fetch stock data using yfinance
+stock_df = yf.download(ticker_symbol, start=start_date, end=end_date)
 
-st.subheader("Data Summary")
-st.write(df.describe())
+# Check if data was fetched successfully
+if not stock_df.empty:
+    # Create a line chart of the 'Close' price
+    st.subheader(f"{ticker_symbol} Closing Price")
+    st.line_chart(stock_df["Close"])
+else:
+    st.error("No data found for the given ticker symbol or date range.")
+
