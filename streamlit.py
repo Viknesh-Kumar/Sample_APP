@@ -72,7 +72,7 @@ def plot_for_truck(selected_truck, packer):
     for item in packed_data:
         pos = item.position
         dim = item.get_dimension()
-        fig.add_trace(go.Box(
+        fig.add_trace(go.Mesh3d(
             x=[pos[0], pos[0] + dim[0]],
             y=[pos[1], pos[1] + dim[1]],
             z=[pos[2], pos[2] + dim[2]],
