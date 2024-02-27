@@ -77,7 +77,7 @@ def plot_for_truck(selected_truck, packer):
             y=[pos[1], pos[1] + dim[1]],
             z=[pos[2], pos[2] + dim[2]],
             name=item.name,
-            opacity=0.7
+            opacity=1
         ))
 
     fig.update_layout(
