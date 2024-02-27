@@ -32,6 +32,32 @@ pbins = {
     for name, group in selected_df.groupby('name')
 }
 
+ 
+# Example data for a single box in 3D space
+
+ 
+# Define which vertices to connect to create the box
+def vertices(xmin=0, ymin=0, zmin=0, xmax=1, ymax=1, zmax=1):
+    return {
+        "x": [xmin, xmin, xmax, xmax, xmin, xmin, xmax, xmax],
+        "y": [ymin, ymax, ymax, ymin, ymin, ymax, ymax, ymin],
+        "z": [zmin, zmin, zmin, zmin, zmax, zmax, zmax, zmax],
+        "i": [7, 0, 0, 0, 4, 4, 6, 1, 4, 0, 3, 6],
+        "j": [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+        "k": [0, 7, 2, 3, 6, 7, 1, 6, 5, 5, 7, 2],
+ 
+fig = go.Figure(data=[go.Mesh3d(
+    x=[v[0] for v in vertices],
+    y=[v[1] for v in vertices],
+    z=[v[2] for v in vertices],
+    i=[mesh3d_indices[i] for i in range(0, len(mesh3d_indices), 4)],
+    j=[mesh3d_indices[i+1] for i in range(0, len(mesh3d_indices), 4)],
+    k=[mesh3d_indices[i+2] for i in range(0, len(mesh3d_indices), 4)],
+    opacity=0.5,
+)])
+ 
+fig.show()
+
 containers = container_df[['Truck_Length(Inch)', 'Truck_Width(Inch)', 'Truck_Height(Inch)']].values.tolist()
 available_trucks = ["Truck-" + str(i + 1) for i in range(len(containers))]
 
