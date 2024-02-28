@@ -62,11 +62,11 @@ def pack_items(containers, pbins):
     packer.pack(bigger_first=True, distribute_items=True, number_of_decimals=3)
  
     packed_data = []  # Store the packing results in a local variable
-    for bin in packer.bins:
+    for i, bin in enumerate(packer.bins):
         for item in bin.items:
             packed_data.append({
                 "bin_name": bin.name,
-                "bin_index": bin.index,
+                "bin_index": i,  # Use loop variable i instead of non-existent bin.index
                 **{d: v for v, d in zip(item.get_dimension(), list("hwl"))},
                 **{d + d: v for v, d in zip(item.position, list("xyz"))}
             })
