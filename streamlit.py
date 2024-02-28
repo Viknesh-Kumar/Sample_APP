@@ -72,39 +72,75 @@ def pack_items(containers, pbins):
 packer = pack_items(containers, pbins)
 
 # Plot function
-def plot_for_truck(selected_truck, packer):
-    packed_data = []
-    for bin in packer.bins:
-        if bin.name == selected_truck:
-            for item in bin.items:
-                packed_data.append(item)
-
-    if not packed_data:
-        st.write("No data to display for selected truck.")
-        return
-
-    fig = go.Figure()
-    for item in packed_data:
-        pos = item.position
-        dim = item.get_dimension()
-        fig.add_trace(go.Mesh3d(
-            x=[pos[0], pos[0] + dim[0]],
-            y=[pos[1], pos[1] + dim[1]],
-            z=[pos[2], pos[2] + dim[2]],
-            name=item.name,
-            opacity=1
-        ))
-
-    fig.update_layout(
-        scene=dict(
-            xaxis_title='Length',
-            yaxis_title='Width',
-            zaxis_title='Height'
-        ),
-        width=700,
-        margin=dict(r=20, l=10, b=10, t=10)
-    )
-    st.plotly_chart(fig)
+def plot_for_truck(selected_truck, containers):
+    df = pd.DataFrame(packed_data)
+    # Filter by selected truck
+    df = df[df['bin_name'].str.contains(selected_truck)]
+    # Create a figure for each container (bin)
+    for pbin, d in df.groupby("bin_name"):
+        fig = go.Figure()
+        # Add wireframe for the full truck dimensions (completely transparent)
+        truck_dimensions = [float(dim) for dim in containers[int(pbin.split("-")[1]) - 1]]
+        truck_outline = vertices(0, 0, 0, *truck_dimensions)
+        fig.add_trace(
+            go.Mesh3d(
+                x=truck_outline["x"],
+                y=truck_outline["y"],
+                z=truck_outline["z"],
+                i=truck_outline["i"],
+                j=truck_outline["j"],
+                k=truck_outline["k"],
+                opacity=0,  # Completely transparent
+                color='blue',
+                hoverinfo='skip'
+            )
+        )
+        # Plot packed items and grid lines
+        xx = []
+        yy = []
+        zz = []
+        for _, r in d.iterrows():
+            fig.add_trace(
+                go.Mesh3d(r[["x", "y", "z", "i", "j", "k", "name", "color"]].to_dict())
+            )
+            xx += [r.xx, r.xx + r.h, r.xx + r.h, r.xx, r.xx, None] * 2 + [r.xx] * 5 + [None]
+            yy += [r.yy, r.yy, r.yy + r.w, r.yy + r.w, r.yy, None] * 2 + [
+                r.yy,
+                r.yy + r.w,
+                r.yy + r.w,
+                r.yy,
+                r.yy,
+                None,
+            ]
+            zz += [r.zz] * 5 + [None] + [r.zz + r.l] * 5 + [None] + [r.zz, r.zz, r.zz + r.l, r.zz + r.l, r.zz, None]
+        fig.add_trace(
+            go.Scatter3d(
+                x=xx,
+                y=yy,
+                z=zz,
+                mode="lines",
+                line_color="black",
+                line_width=2,
+                hoverinfo="skip",
+            )
+        )
+        # Configure the figure
+        ar = 4
+        xr = max(d["x"].max()) - min(d["x"].min())
+        aspect_ratio_x = ar
+        aspect_ratio_y = ((max(d["y"].max()) - min(d["y"].min())) / xr) * ar
+        aspect_ratio_z = ((max(d["z"].max()) - min(d["z"].min())) / xr) * ar
+        fig.update_layout(
+            title={"text": pbin, "y": 0.9, "x": 0.5, "xanchor": "center", "yanchor": "top"},
+            margin={"l": 0, "r": 0, "t": 0, "b": 0},
+            scene=dict(
+                camera=dict(eye=dict(x=2, y=2, z=2)),
+                aspectratio=dict(x=aspect_ratio_x, y=aspect_ratio_y, z=aspect_ratio_z),
+                aspectmode="manual",
+            ),
+        )
+        # Display the figure in Streamlit
+        st.plotly_chart(fig)
 
 if st.button('Show Packing for Selected Truck'):
     plot_for_truck(selected_truck, packer)
