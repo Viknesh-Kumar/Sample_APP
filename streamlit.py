@@ -67,9 +67,8 @@ for i, b in enumerate(packer.bins):
                 "bin_index": i,
                 **packer_to_plotly(item),
                 **{d: v for v, d in zip(item.get_dimension(), list("hwl"))},
-                **{d + d: v for v, d in zip(item.position, list("xyz"))},
-            })
-    packer = Packer()
+                **{d + d: v for v, d in zip(item.position, list("xyz"))}})
+packer = Packer()
     for i, container in enumerate(containers):
         container_dims = [float(dim) for dim in container]
         packer.add_bin(Bin("Truck-" + str(i + 1), *container_dims, 18000.0))
