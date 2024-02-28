@@ -57,10 +57,10 @@ selected_truck = st.selectbox('Select Truck:', available_trucks)
 def pack_items(containers, pbins):
     packed_data = []
     global packed_data
-packed_data.clear()
+    packed_data.clear()
  
 # Store the packing results in the global variable
-    for i, b in enumerate(packer.bins):
+for i, b in enumerate(packer.bins):
         for item in b.items:
             packed_data.append({
                 "bin_name": b.name,
