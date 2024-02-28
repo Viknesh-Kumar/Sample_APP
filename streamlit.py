@@ -56,6 +56,19 @@ selected_truck = st.selectbox('Select Truck:', available_trucks)
 # Function to pack items
 def pack_items(containers, pbins):
     packed_data = []
+    global packed_data
+packed_data.clear()
+ 
+# Store the packing results in the global variable
+    for i, b in enumerate(packer.bins):
+        for item in b.items:
+            packed_data.append({
+                "bin_name": b.name,
+                "bin_index": i,
+                **packer_to_plotly(item),
+                **{d: v for v, d in zip(item.get_dimension(), list("hwl"))},
+                **{d + d: v for v, d in zip(item.position, list("xyz"))},
+            })
     packer = Packer()
     for i, container in enumerate(containers):
         container_dims = [float(dim) for dim in container]
@@ -69,7 +82,7 @@ def pack_items(containers, pbins):
     packer.pack(bigger_first=True, distribute_items=True, number_of_decimals=3)
     return packer
 
-packer = pack_items(containers, pbins)
+packer = pack_items(containers, pbins, packer)
 
 # Plot function
 def plot_for_truck(selected_truck, containers):
