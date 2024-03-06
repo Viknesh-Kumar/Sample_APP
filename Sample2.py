@@ -64,7 +64,10 @@ def pack_items(containers, pbins):
         for item in bin.items:
             packed_data.append({
                 "Item_Id": item.name,
-                "Truck": bin.name
+                "Truck": bin.name,
+                "x": item.position[0],
+                "y": item.position[1],
+                "z": item.position[2] 
             })
     return pd.DataFrame(packed_data) 
 
