@@ -3,6 +3,59 @@ import pandas as pd
 from py3dbp import Packer, Bin, Item
 import pythreejs as p3
 
+def prepare_visualization_data(packed_df, containers):
+    boxes_data = []
+    for _, row in packed_df.iterrows():
+        boxes_data.append({
+            'name': row['Item_Id'],
+            'width': row['width'], 
+            'height': row['height'], 
+            'depth': row['length'], 
+            'x': row['x'],
+            'y': row['y'],
+            'z': row['z']
+        })
+
+    container_data = {
+        'name': selected_truck,
+        'width': containers[available_trucks.index(selected_truck)][0],
+        'height': containers[available_trucks.index(selected_truck)][1],
+        'depth': containers[available_trucks.index(selected_truck)][2],
+        'x': 0,
+        'y': 0,
+        'z': 0
+    }
+
+    return boxes_data, container_data
+def visualize_packing(boxes_data, container_data):
+    # Create boxes
+    boxes = [
+        p3.BoxGeometry(width=box['width'], height=box['height'], depth=box['depth'])
+        for box in boxes_data
+    ]
+
+    box_materials = [p3.MeshLambertMaterial(color=f'#{randint(0, 0xffffff):06x}') for _ in boxes_data]
+    box_meshes = [p3.Mesh(geometry, material) for geometry, material in zip(boxes, box_materials)]
+
+    # Position boxes
+    for box_mesh, box in zip(box_meshes, boxes_data):
+        box_mesh.position.set(box['x'], box['y'], box['z'])
+
+    # Create container (with some transparency)
+    container_geometry = p3.BoxGeometry(
+        width=container_data['width'], 
+        height=container_data['height'], 
+        depth=container_data['depth']
+    )
+    container_material = p3.MeshLambertMaterial(opacity=0.3, transparent=True)
+    container_mesh = p3.Mesh(container_geometry, container_material)
+
+    # Setup scene, camera, renderer
+    scene = p3.Scene(children=[*box_meshes, container_mesh])
+    camera = p3.PerspectiveCamera(position=[50, 50, 50], up=[0, 1, 0])
+    renderer = p3.Renderer(camera=camera, scene=scene)
+
+    return renderer
 
 uploaded_boxes_file = st.file_uploader("Choose a file for boxes data", type=['xlsx'])
 if uploaded_boxes_file is not None:
@@ -78,59 +131,7 @@ packed_df = pack_items(containers, pbins)
 
 # Display the DataFrame 
 st.dataframe(packed_df)
-def prepare_visualization_data(packed_df, containers):
-    boxes_data = []
-    for _, row in packed_df.iterrows():
-        boxes_data.append({
-            'name': row['Item_Id'],
-            'width': row['width'], 
-            'height': row['height'], 
-            'depth': row['length'], 
-            'x': row['x'],
-            'y': row['y'],
-            'z': row['z']
-        })
 
-    container_data = {
-        'name': selected_truck,
-        'width': containers[available_trucks.index(selected_truck)][0],
-        'height': containers[available_trucks.index(selected_truck)][1],
-        'depth': containers[available_trucks.index(selected_truck)][2],
-        'x': 0,
-        'y': 0,
-        'z': 0
-    }
-
-    return boxes_data, container_data
-def visualize_packing(boxes_data, container_data):
-    # Create boxes
-    boxes = [
-        p3.BoxGeometry(width=box['width'], height=box['height'], depth=box['depth'])
-        for box in boxes_data
-    ]
-
-    box_materials = [p3.MeshLambertMaterial(color=f'#{randint(0, 0xffffff):06x}') for _ in boxes_data]
-    box_meshes = [p3.Mesh(geometry, material) for geometry, material in zip(boxes, box_materials)]
-
-    # Position boxes
-    for box_mesh, box in zip(box_meshes, boxes_data):
-        box_mesh.position.set(box['x'], box['y'], box['z'])
-
-    # Create container (with some transparency)
-    container_geometry = p3.BoxGeometry(
-        width=container_data['width'], 
-        height=container_data['height'], 
-        depth=container_data['depth']
-    )
-    container_material = p3.MeshLambertMaterial(opacity=0.3, transparent=True)
-    container_mesh = p3.Mesh(container_geometry, container_material)
-
-    # Setup scene, camera, renderer
-    scene = p3.Scene(children=[*box_meshes, container_mesh])
-    camera = p3.PerspectiveCamera(position=[50, 50, 50], up=[0, 1, 0])
-    renderer = p3.Renderer(camera=camera, scene=scene)
-
-    return renderer
 # ... (Your imports and existing code) ...
 
 # ... (Your code up to the part where packed_df is generated) ...
