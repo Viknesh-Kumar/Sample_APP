@@ -81,7 +81,9 @@ pbins = {
   }
   for name, group in selected_df.groupby('name')
 }
- 
+
+
+
 def vertices(xmin=0, ymin=0, zmin=0, xmax=1, ymax=1, zmax=1):
   return {
     "x": [xmin, xmin, xmax, xmax, xmin, xmin, xmax, xmax],
@@ -133,6 +135,9 @@ packed_df = pack_items(containers, pbins)
 st.dataframe(packed_df)
 
 # ... (Your imports and existing code) ...
+print(packed_df.head())  # Print a sample of your DataFrame
+print(packed_df.columns)  # Print the column names
+print(packed_df.index)    # Print the index type
 
 # ... (Your code up to the part where packed_df is generated) ...
 
