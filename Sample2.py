@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
 from py3dbp import Packer, Bin, Item
-
+import time
+start_time = time.time()
 uploaded_boxes_file = st.file_uploader("Choose a file for boxes data", type=['xlsx'])
 if uploaded_boxes_file is not None:
     boxes_df = pd.read_excel(uploaded_boxes_file)
@@ -73,6 +74,10 @@ def pack_items(containers, pbins):
 
 # Generate DataFrame with packing assignments
 packed_df = pack_items(containers, pbins)
+end_time = time.time()
+total_runtime = end_time - start_time
+st.write(f"Total Runtime (seconds): {total_runtime:.3f}") # Display with 3 decimal places
 
 # Display the DataFrame 
 st.dataframe(packed_df)
+
