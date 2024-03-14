@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from py3dbp import Packer, Bin, Item
 import time
-import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 start_time = time.time()
 uploaded_boxes_file = st.file_uploader("Choose a file for boxes data", type=['xlsx'])
 if uploaded_boxes_file is not None:
@@ -78,77 +78,40 @@ packed_df = pack_items(containers, pbins)
 end_time = time.time()
 total_runtime = end_time - start_time
 st.write(f"Total Runtime (seconds): {total_runtime:.3f}") # Display with 3 decimal places
-def visualize_packing(packed_df, truck_length, truck_width, truck_height):
-    fig = go.Figure()
 
-    # Truck box 
-    fig.add_trace(go.Mesh3d(
-        vertices(0, 0, 0, truck_length, truck_width, truck_height),  
-        **vertices() 
-    ))
+def visualize_packing_2d(packed_df, truck_length, truck_width):
+    fig, ax = plt.subplots()
 
-    # Add items
+    # Truck rectangle
+    truck_rect = plt.Rectangle((0, 0), truck_length, truck_width, color='gray', alpha=0.6)
+    ax.add_patch(truck_rect)
+
+    # Items
     for index, row in packed_df.iterrows():
-        fig.add_trace(go.Mesh3d(
-            x=[
-                row['x'], # Item x1
-                row['x'], 
-                row['x'] + row['length'], # Item x2
-                row['x'] + row['length'], 
-                row['x'], 
-                row['x'], 
-                row['x'] + row['length'], 
-                row['x'] + row['length'] 
-            ],
-            y=[
-                row['y'],
-                row['y'] + row['width'], 
-                row['y'] + row['width'],
-                row['y'], 
-                row['y'],
-                row['y'] + row['width'], 
-                row['y'] + row['width'],
-                row['y']
-            ],
-            z=[
-                row['z'],
-                row['z'],
-                row['z'],
-                row['z'],
-                row['z'] + row['height'], 
-                row['z'] + row['height'], 
-                row['z'] + row['height'],
-                row['z'] + row['height'] 
-            ],
-            **vertices(),
-            color='lightblue',
-            opacity=0.7,
-            hovertext=row['Item_Id']
-        ))
+        item_rect = plt.Rectangle(
+            (row['x'], row['y']), 
+            row['length'], row['width'], 
+            color='lightblue', alpha=0.7
+        )
+        ax.add_patch(item_rect)
+        ax.annotate(row['Item_Id'], xy=(row['x'] + 0.5, row['y'] + 0.5), ha='center', va='center')
 
-    # Customize camera for optimal view
-    fig.update_layout(scene_camera=dict(eye=dict(x=1.5, y=1.5, z=0.5)))
-
-    # Customize layout
-    fig.update_layout(
-        scene=dict(
-            xaxis_title='Truck Length',
-            yaxis_title='Truck Width',
-            zaxis_title='Truck Height'
-        ),
-        margin=dict(l=10, r=10, b=10, t=10)  # Reduce margins
-    )
+    # Labels and limits
+    ax.set_xlabel('Truck Length')
+    ax.set_ylabel('Truck Width')
+    ax.set_xlim(0, truck_length + truck_length * 0.1)  # Add a bit of margin
+    ax.set_ylim(0, truck_width + truck_width * 0.1) 
 
     return fig
 
 # Display the DataFrame 
 st.dataframe(packed_df)
 
-# Integrating with Streamlit
-truck = selected_truck.split("-")[-1]  # Extract truck number
-selected_truck_dimensions = containers[int(truck) - 1]
+# ... (Your existing code to get packed_df, truck, and selected_truck_dimensions)
 
 # Create and display visualization
-fig = visualize_packing(packed_df, *selected_truck_dimensions)
-st.plotly_chart(fig)
+fig = visualize_packing_2d(packed_df.copy(), *selected_truck_dimensions)  # Copy to avoid side effects
+
+st.pyplot(fig) 
+
 
